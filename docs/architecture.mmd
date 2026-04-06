@@ -15,6 +15,8 @@ flowchart TD
     root --> component_SECURITY_md
     component_SUPPORT_md["SUPPORT.md"]
     root --> component_SUPPORT_md
+    component_docs["docs"]
+    root --> component_docs
     component_scripts["scripts"]
     root --> component_scripts
 
@@ -33,5 +35,7 @@ flowchart TD
     component_SECURITY_md --> file_SECURITY_md
     file_SUPPORT_md["SUPPORT.md"]
     component_SUPPORT_md --> file_SUPPORT_md
+    file_docs_architecture_mmd["docs/architecture.mmd"]
+    component_docs --> file_docs_architecture_mmd
     file_scripts_generate_merman_diagram_py["scripts/generate_merman_diagram.py"]
     component_scripts --> file_scripts_generate_merman_diagram_py
