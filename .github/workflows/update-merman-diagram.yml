@@ -1,0 +1,60 @@
+name: Update Mermaid Architecture Diagram
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: Public GitHub URL (optional). If empty, uses current repository.
+        required: false
+        type: string
+      output_path:
+        description: Diagram output file path
+        required: false
+        default: docs/architecture.mmd
+        type: string
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - docs/architecture.mmd
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate-diagram:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate diagram from local repository
+        if: inputs.repo_url == ''
+        run: python3 scripts/generate_merman_diagram.py --repo-path . --output "${{ inputs.output_path || 'docs/architecture.mmd' }}"
+
+      - name: Generate diagram from public repository URL
+        if: inputs.repo_url != ''
+        run: python3 scripts/generate_merman_diagram.py --repo-url "${{ inputs.repo_url }}" --output "${{ inputs.output_path || 'docs/architecture.mmd' }}"
+
+      - name: Commit and push if diagram changed
+        run: |
+          if git diff --quiet -- "${{ inputs.output_path || 'docs/architecture.mmd' }}"; then
+            echo "No diagram changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ inputs.output_path || 'docs/architecture.mmd' }}"
+          git commit -m "chore: refresh architecture diagram"
+          git push
